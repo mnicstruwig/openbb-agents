@@ -9,6 +9,8 @@ from pydantic.v1 import create_model, BaseModel
 from pydantic.v1.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
+
+
 def _fetch_obb_module(openbb_command_root):
     module_path_split = openbb_command_root.split("/")[1:]
     module_path = '.'.join(module_path_split)
