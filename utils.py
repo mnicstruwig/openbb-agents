@@ -1,7 +1,8 @@
 """Load OpenBB functions at OpenAI tools for function calling in Langchain"""
 import inspect
 
-from typing import get_args, get_origin, Literal
+from typing import get_args, get_origin, Literal, Modu
+from types import ModuleType
 
 from langchain.tools import StructuredTool
 from openbb import obb
@@ -10,22 +11,20 @@ from pydantic.v1.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
 
-
-def _fetch_obb_module(openbb_command_root):
+def _fetch_obb_module(openbb_command_root: str) -> ModuleType:
     module_path_split = openbb_command_root.split("/")[1:]
     module_path = '.'.join(module_path_split)
 
     # Iteratively get module
     module = obb
     for attr in module_path.split('.'):
-        module=getattr(module, attr)
+        module = getattr(module, attr)
 
     return module
 
-def _fetch_schemas(openbb_command_root):
-    # Ugly hack to make it compatiable
-    # (even though we convert it back)
-    # so that we have a nicer API.
+def _fetch_schemas(openbb_command_root: str) -> dict:
+    # Ugly hack to make it compatiable with the look-up (even though we convert
+    # it back) so that we have a nicer API for the user.
     module_root_path = openbb_command_root.replace("/", ".")
     schemas = {
         k.replace('.', '/'): v for k, v in obb.coverage.command_model.items() if module_root_path in k
@@ -123,7 +122,16 @@ def map_openbb_functions_to_langchain_tools(schemas_dict, callables_dict):
     return tools
 
 
-def map_openbb_collection_to_langchain_tools(openbb_command_root):
+def map_openbb_collection_to_langchain_tools(openbb_command_root: str) -> list[StructuredTool]:
+    """Map a collection of OpenBB callables from a commad root to Langchain StructuredTools.
+
+    Examples
+    --------
+    >>> fundamental_tools = map_openbb_collection_to_langchain_tools("/equity/fundamental")
+    >>> crypto_price_tools = map_openbb_collection_to_langchain_tools("/crypto/price")
+
+
+    """
     schemas = _fetch_schemas(openbb_command_root)
     callables = _fetch_callables(openbb_command_root)
     tools = map_openbb_functions_to_langchain_tools(
