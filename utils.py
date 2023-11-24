@@ -1,7 +1,6 @@
 """Load OpenBB functions at OpenAI tools for function calling in Langchain"""
 import inspect
 
-from typing import get_args, get_origin, Literal, Modu
 from types import ModuleType
 
 from langchain.tools import StructuredTool
